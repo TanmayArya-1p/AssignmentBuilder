@@ -6,8 +6,7 @@ import os
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
-import pygments
-from bs4 import BeautifulSoup
+from tqdm import tqdm
 max_lines_per_page = 27
 
 
@@ -34,11 +33,11 @@ run.font.name = 'Arial'
 run.font.size = docx.shared.Pt(10)
 
 doc.add_paragraph()
+print("Creating DOCX...")
 
 linesused = 3
 prob = config["problems"]
-for i in prob:
-    print(linesused)
+for i in tqdm(prob):
     if linesused >= max_lines_per_page:
         doc.add_page_break()
         linesused = 0
@@ -100,13 +99,11 @@ for i in prob:
         r.font.name = 'Courier New'
         linesused += console_content_after.count("\n")+1 + console_content_before.count("\n")+1
 
-
-
-    
-    
-    
-
-    
+import webbrowser
+import docx2pdf
 
 
 doc.save(f"{config['title']}.docx")
+print("Generating PDF...")
+docx2pdf.convert(f"{config['title']}.docx", f"{config['title']}.pdf")
+webbrowser.open(f"{config['title']}.pdf")
