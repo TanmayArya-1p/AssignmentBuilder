@@ -7,7 +7,11 @@ from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
 from tqdm import tqdm
-max_lines_per_page = 27
+import json
+
+build_config = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json"), 'r'))
+
+max_lines_per_page = build_config["MAX_LINES_PER_PAGE"]
 
 
 co =  open("abconfig.yaml", 'r')
@@ -23,13 +27,14 @@ p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
 run = p.add_run(config["title"])
 
 run.bold = True
-run.font.name = 'Arial'
+run.font.name = build_config["PRIMARY_FONT"]
+
 run.font.size = docx.shared.Pt(16)
 
 p = doc.add_paragraph()
 p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
 run = p.add_run(config["byline"])
-run.font.name = 'Arial'
+run.font.name = build_config["PRIMARY_FONT"]
 run.font.size = docx.shared.Pt(10)
 
 doc.add_paragraph()
@@ -43,10 +48,11 @@ for i in tqdm(prob):
         linesused = 0
 
     p = doc.add_paragraph()
-    p.add_run(i.upper()+":")
+    p.add_run(i.upper()+":").font.name = build_config["PRIMARY_FONT"]
     linesused += 1
     p = doc.add_paragraph()
     r = p.add_run("Source Code:")
+    r.font.name = build_config["PRIMARY_FONT"]
     linesused += 1
 
     r.font.bold = True
@@ -56,9 +62,9 @@ for i in tqdm(prob):
         r = p.add_run(src)
         linesused += src.count("\n")
 
-        r.font.name = "Courier New"
+        r.font.name = build_config["CODE_FONT"]
         subprocess.Popen(f"gcc {prob[i]['source']}")
-        command = f"a.exe"
+        command = f"{os.getcwd()}\\a.exe"
 
         process = subprocess.Popen(
         command,
@@ -84,19 +90,21 @@ for i in tqdm(prob):
         p = doc.add_paragraph()
         r = p.add_run("Output:")
         r.font.bold = True
+        r.font.name = build_config["PRIMARY_FONT"]
         p = doc.add_paragraph()
         r = p.add_run(console_content_before)
         r.font.size = docx.shared.Pt(10)
-        r.font.name = 'Courier New'
+        r.font.name =build_config["CODE_FONT"]
+
 
         r = p.add_run(prob[i]["testcase"])
         r.font.size = docx.shared.Pt(10)
-        r.font.name = 'Courier New'
+        r.font.name = build_config["CODE_FONT"]
         r.font.italic = True
 
         r = p.add_run(console_content_after)
         r.font.size = docx.shared.Pt(10)
-        r.font.name = 'Courier New'
+        r.font.name = build_config["CODE_FONT"]
         linesused += console_content_after.count("\n")+1 + console_content_before.count("\n")+1
 
 import webbrowser
